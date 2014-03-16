@@ -8,33 +8,20 @@ Merit adds reputation behavior to Rails apps in the form of Badges and Points.
 
 # Table of Contents
 
-- [Installation](#installation)
 - [Badges](#badges)
     - [Creating Badges](#creating-badges)
         - [Example](#example)
-    - [Defining Rules](#defining-rules)
-        - [Examples](#examples)
-    - [Other Actions](#other-actions)
+    - [Usage](#usage)
     - [Displaying Badges](#displaying-badges)
 - [Points](#points)
-    - [Defining Rules](#defining-rules-1)
-        - [Examples](#examples-1)
-    - [Other Actions](#other-actions-1)
+    - [Usage](#usage-1)
     - [Displaying Points](#displaying-points)
-- [Getting Notifications](#getting-notifications)
-- [Uninstalling Merit](#uninstalling-merit)
-
 
 # Installation
 
 1. Add `gem 'merit'` to your `Gemfile`
-2. Run `rails g merit:install`
-3. Run `rails g merit MODEL_NAME` (e.g. `user`)
-4. Run `rake db:migrate`
-5. Define badges in `config/initializers/merit.rb`. You can also define ORM:
-   `:active_record` (default) or `:mongoid`.
-6. Configure reputation rules for your application in `app/models/merit/*`
-
+2. Run `bundle install`
+3. Define badges in `config/initializers/merit.rb`.
 
 # Badges
 
@@ -60,52 +47,7 @@ Merit::Badge.create!(
 )
 ```
 
-## Defining Rules
-
-Badges can be automatically given to any resource in your application based on
-rules and conditions you create. Badges can also have levels, and be permanent
-or temporary (A temporary badge is revoked when the conditions of the badge
-are no longer met).
-
-Badge rules / conditions are defined in `app/models/merit/badge_rules.rb`
-`initialize` block by calling `grant_on` with the following parameters:
-
-* `'controller#action'` a string similar to Rails routes
-* `:badge` corresponds to the `:name` of the badge
-* `:level` corresponds to the `:level` of the badge
-* `:to` the object's field to give the badge to
-  * If you are putting badges on the related user then this field is probably
-    `:user`.
-  * Needs a variable named `@model` in the associated controller action, like
-    `@post` for `posts_controller.rb` or `@comment` for `comments_controller.rb`.
-    Implementation note: Merit finds the object with following snippet:
-    `instance_variable_get(:"@#{controller_name.singularize}")`.
-* `:model_name` define the controller's name if it's different from
-  the model's (e.g. `RegistrationsController` for the `User` model).
-* `:multiple` whether or not the badge may be granted multiple times. `false` by default.
-* `:temporary` whether or not the badge should be revoked if the condition no
-  longer holds. `false` -badges are kept for ever- by default.
-* `&block` can be one of the following:
-  * empty / not included: always grant the badge
-  * a block which evaluates to boolean. It recieves the target object as
-    parameter (e.g. `@post` if you're working with a PostsController action).
-  * a block with a hash composed of methods to run on the target object and
-    expected method return values
-
-### Examples
-
-```ruby
-# app/models/merit/badge_rules.rb
-grant_on 'comments#vote', badge: 'relevant-commenter', to: :user do |comment|
-  comment.votes.count == 5
-end
-
-grant_on ['users#create', 'users#update'], badge: 'autobiographer', temporary: true do |user|
-  user.name? && user.email?
-end
-```
-
-## Other Actions
+## Usage
 
 ```ruby
 # Check granted badges
@@ -137,52 +79,11 @@ badges:
 
 # Points
 
-## Defining Rules
-
-Points are given to "meritable" resources on actions-triggered, either to the
-action user or to the method(s) defined in the `:to` option. Define rules on
-`app/models/merit/point_rules.rb`:
-
-`score` accepts:
-
-* `score`
-  * `Integer`
-  * `Proc`, or any object that accepts `call` which takes one argument, where
-    the target_object is passed in and the return value is used as the score.
-* `:on` action as string or array of strings (similar to Rails routes)
-* `:to` method(s) to send to the target_object (who should be scored?)
-* `:model_name` (optional) to specify the model name if it cannot be guessed
-  from the controller. (e.g. `model_name: 'User'` for `RegistrationsController`,
-  or `model_name: 'Comment'` for `Api::CommentsController`)
-* `:category` (optional) to categorize earned points. `default` is used by default.
-* `&block`
-  * empty (always scores)
-  * a block which evaluates to boolean (recieves target object as parameter)
-
-### Examples
+## Examples
 
 ```ruby
-# app/models/merit/point_rules.rb
-score 10, to: :post_creator, on: 'comments#create', category: 'comment_activity' do |comment|
-  comment.title.present?
-end
-
-score 20, on: [
-  'comments#create',
-  'photos#create'
-]
-
-score 15, on: 'reviews#create', to: [:reviewer, :reviewed]
-
-proc = lambda { |photo| PhotoPointsCalculator.calculate_score_for(photo) }
-score proc, on: 'photos#create'
-```
-
-## Other Actions
-
-```ruby
-# Score manually
-current_user.add_points(20, category: 'Optional category')
+# Score points
+current_user.add_points(20, category: 'Optional category', message: 'You answered a question')
 current_user.subtract_points(10, category: 'Optional category')
 ```
 
@@ -205,59 +106,3 @@ If `category` left empty, it will return the sum of points for every category.
 ```erb
 <%= current_user.points %>
 ```
-
-# Getting Notifications
-
-You can get observers notified any time merit changes reputation in your
-application.
-
-To do so, add your observer (to `app/models` or `app/observers`, for example):
-
-```ruby
-# reputation_change_observer.rb
-class ReputationChangeObserver
-  def update(changed_data)
-    # description will be something like:
-    #   granted 5 points
-    #   granted just-registered badge
-    #   removed autobiographer badge
-    description = changed_data[:description]
-
-    # If user is your meritable model, you can grab it like:
-    if changed_data[:merit_object]
-      sash_id = changed_data[:merit_object].sash_id
-      user = User.where(sash_id: sash_id).first
-    end
-
-    # To know where and when it happened:
-    merit_action = Merit::Action.find changed_data[:merit_action_id]
-    controller = merit_action.target_model
-    action = merit_action.action_method
-    when = merit_action.created_at
-
-    # From here on, you can create a new Notification assuming that's an
-    # ActiveRecord Model in your app, send an email, etc. For example:
-    Notification.create(
-      user: user,
-      what: description,
-      where: "#{controller}##{action}",
-      when: when)
-  end
-end
-```
-```ruby
-# In `config/initializers/merit.rb`
-config.add_observer 'ReputationChangeObserver'
-```
-
-TODO: Improve API sending in `changed_data` concrete data instead of merit
-objects.
-
-
-# Uninstalling Merit
-
-1. Run `rails d merit:install`
-2. Run `rails d merit MODEL_NAME` (e.g. `user`)
-3. Run `rails g merit:remove MODEL_NAME` (e.g. `user`)
-4. Run `rake db:migrate`
-5. Remove `merit` from your Gemfile
