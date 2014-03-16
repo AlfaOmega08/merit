@@ -8,10 +8,6 @@ class NavigationTest < ActiveSupport::IntegrationCase
   test 'user sign up should grant badge to itself' do
     visit '/users/new'
     fill_in 'Name', with: 'Jack'
-    assert_difference('Merit::ActivityLog.count') do
-      click_button('Create User')
-    end
-
     user = User.where(name: 'Jack').first
     assert_equal [Merit::Badge.by_name('just-registered').first], user.badges
   end
@@ -126,9 +122,6 @@ class NavigationTest < ActiveSupport::IntegrationCase
     # tests ruby code in grant_on is being executed, and removes badge
     visit "/users/#{user.id}/edit"
     fill_in 'Name', with: 'abc'
-    assert_difference('Merit::ActivityLog.count', 2) do
-      click_button('Update User')
-    end
 
     user = User.where(name: 'abc').first
     assert !user.badges.include?(autobiographer_badge), "User badges: #{user.badges.collect(&:name).inspect} should remove autobiographer badge."
@@ -142,9 +135,6 @@ class NavigationTest < ActiveSupport::IntegrationCase
 
     visit "/users/#{user.id}/edit"
     fill_in 'Name', with: 'a'
-    assert_difference('Merit::ActivityLog.count', 2) do
-      click_button('Update User')
-    end
 
     user = User.where(name: 'a').first
     assert_equal 20, user.points, 'Updating info should grant 20 points'
