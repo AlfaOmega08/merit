@@ -1,7 +1,6 @@
 # Merit
 
-Merit adds reputation behavior to Rails apps in the form of Badges, Points,
-and Rankings.
+Merit adds reputation behavior to Rails apps in the form of Badges and Points.
 
 [![Build Status](https://travis-ci.org/tute/merit.png?branch=master)](http://travis-ci.org/tute/merit)
 [![Code Climate](https://codeclimate.com/github/tute/merit.png)](https://codeclimate.com/github/tute/merit)
@@ -22,10 +21,6 @@ and Rankings.
         - [Examples](#examples-1)
     - [Other Actions](#other-actions-1)
     - [Displaying Points](#displaying-points)
-- [Rankings](#rankings)
-    - [Defining Rules](#defining-rules-2)
-        - [Examples](#examples-2)
-    - [Displaying Rankings](#displaying-rankings)
 - [Getting Notifications](#getting-notifications)
 - [Uninstalling Merit](#uninstalling-merit)
 
@@ -210,51 +205,6 @@ If `category` left empty, it will return the sum of points for every category.
 ```erb
 <%= current_user.points %>
 ```
-
-# Rankings
-
-A common ranking use case is 5 stars. They are not given at specified actions
-like badges, a cron job should be defined to test if ranks are to be granted.
-
-## Defining Rules
-
-Define rules on `app/models/merit/rank_rules.rb`:
-
-`set_rank` accepts:
-
-* `:level` ranking level (greater is better, Lexicographical order)
-* `:to` model or scope to check if new rankings apply
-* `:level_name` attribute name (default is empty and results in
-  '`level`' attribute, if set it's appended like
-  '`level_#{level_name}`')
-
-Check for rules on a rake task executed in background like:
-
-```ruby
-task cron: :environment do
-  Merit::RankRules.new.check_rank_rules
-end
-```
-
-
-### Examples
-
-```ruby
-set_rank level: 2, to: Committer.active do |committer|
-  committer.branches > 1 && committer.followers >= 10
-end
-
-set_rank level: 3, to: Committer.active do |committer|
-  committer.branches > 2 && committer.followers >= 20
-end
-```
-
-## Displaying Rankings
-
-```erb
-<%= current_user.level %>
-```
-
 
 # Getting Notifications
 
