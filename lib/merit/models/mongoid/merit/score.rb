@@ -33,6 +33,7 @@ module Merit
 
       field :num_points,    type: Integer, default: 0
       field :log,           type: String
+      field :details,       type: Hash
 
       belongs_to :score, class_name: 'Merit::Score'
 

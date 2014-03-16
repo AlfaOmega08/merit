@@ -13,7 +13,7 @@ module Merit
 
   # # Define ORM
   def self.orm
-    @config.orm || :mongoid
+    :mongoid
   end
 
   # Define user_model_name
@@ -50,15 +50,13 @@ module Merit
     def require_models
       require 'merit/models/base/sash'
       require 'merit/models/base/badges_sash'
-      require "merit/models/#{Merit.orm}/merit/badges_sash"
-      require "merit/models/#{Merit.orm}/merit/sash"
-      require "merit/models/#{Merit.orm}/merit/score"
+      require 'merit/models/mongoid/merit/badges_sash'
+      require 'merit/models/mongoid/merit/sash'
+      require 'merit/models/mongoid/merit/score'
     end
 
     def extend_orm_with_has_merit
-      if Object.const_defined?('Mongoid')
-        Mongoid::Document.send :include, Merit
-      end
+      Mongoid::Document.send :include, Merit
     end
   end
 end
