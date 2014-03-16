@@ -1,8 +1,5 @@
 # Use this hook to configure merit parameters
 Merit.setup do |config|
-  # Add application observers to get notifications any time merit changes reputation.
-  config.add_observer 'DummyObserver'
-
   config.orm = ENV['ORM'].try(:to_sym)
 end
 

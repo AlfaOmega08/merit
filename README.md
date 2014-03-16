@@ -7,7 +7,7 @@ Merit adds reputation behavior to Rails apps in the form of Badges and Points.
 
 
 # Table of Contents
-
+check
 - [Badges](#badges)
     - [Creating Badges](#creating-badges)
         - [Example](#example)
