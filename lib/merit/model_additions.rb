@@ -10,7 +10,7 @@ module Merit
       belongs_to :sash, class_name: 'Merit::Sash', inverse_of: nil
       attr_accessible :sash if show_attr_accessible?
 
-      send :"_merit_#{Merit.orm}_specific_config"
+      send :"_merit_mongoid_specific_config"
       _merit_delegate_methods_to_sash
       _merit_define_badge_related_entries_method
       _merit_sash_initializer
@@ -23,11 +23,7 @@ module Merit
       methods.each { |method| delegate method, to: :_sash }
     end
 
-    def _merit_active_record_specific_config
-    end
-
     def _merit_mongoid_specific_config
-      field :level, type: Integer, default: 0
       def find_by_id(id)
         where(_id: id).first
       end

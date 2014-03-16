@@ -26,17 +26,13 @@ require 'capybara/rails'
 Capybara.default_driver   = :rack_test
 Capybara.default_selector = :css
 
-Merit.orm = :active_record if Merit.orm.nil?
-
-def active_record_orm?
-  Merit.orm == :active_record
-end
+Merit.orm = :mongoid if Merit.orm.nil?
 
 def mongoid_orm?
   Merit.orm == :mongoid
 end
 
-require "orm/#{Merit.orm}"
+require "orm/mongoid"
 
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }

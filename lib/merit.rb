@@ -1,7 +1,6 @@
 require 'merit/rule'
 require 'merit/rules_badge_methods'
 require 'merit/rules_points_methods'
-require 'merit/rules_rank_methods'
 require 'merit/rules_matcher'
 require 'merit/controller_extensions'
 require 'merit/model_additions'
@@ -26,7 +25,7 @@ module Merit
 
   # # Define ORM
   def self.orm
-    @config.orm || :active_record
+    @config.orm || :mongoid
   end
 
   # Define user_model_name
@@ -54,7 +53,7 @@ module Merit
 
     def initialize
       @checks_on_each_request = true
-      @orm = :active_record
+      @orm = :mongoid
       @user_model_name = 'User'
       @observers = []
     end
@@ -68,7 +67,6 @@ module Merit
   add_observer('Merit::ReputationChangeObserver')
 
   class BadgeNotFound < Exception; end
-  class RankAttributeNotDefined < Exception; end
 
   class Engine < Rails::Engine
     config.app_generators.orm Merit.orm
@@ -99,9 +97,6 @@ module Merit
     end
 
     def extend_orm_with_has_merit
-      if Object.const_defined?('ActiveRecord')
-        ActiveRecord::Base.send :include, Merit
-      end
       if Object.const_defined?('Mongoid')
         Mongoid::Document.send :include, Merit
       end

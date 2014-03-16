@@ -1,12 +1,6 @@
-case Merit.orm
-when :active_record
-  class Address < ActiveRecord::Base
-  end
-when :mongoid
-  class Address
-    include Mongoid::Document
-    include Mongoid::Timestamps
-  end
+class Address
+  include Mongoid::Document
+  include Mongoid::Timestamps
 end
 
 class Address

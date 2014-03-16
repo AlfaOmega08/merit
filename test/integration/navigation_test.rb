@@ -199,43 +199,6 @@ class NavigationTest < ActiveSupport::IntegrationCase
     assert_equal 50, user.points, 'Commenting should grant the integer in comment points if comment is an integer'
   end
 
-  test 'user workflow should grant levels at some times' do
-    DummyObserver.any_instance.expects(:update).at_least_once
-    user = User.create(name: 'test-user')
-    assert user.badges.empty?
-
-    # Edit user's name by 2 chars name
-    visit "/users/#{user.id}/edit"
-    fill_in 'Name', with: 'ab'
-    click_button('Update User')
-
-    user = User.where(name: 'ab').first
-    assert_equal 0, user.level, "User level should be 0."
-    Merit::RankRules.new.check_rank_rules
-    user.reload
-    assert_equal 2, user.level, "User level should be 2."
-
-    # Edit user's name by short name. Doesn't go back to previous rank.
-    visit "/users/#{user.id}/edit"
-    fill_in 'Name', with: 'a'
-    click_button('Update User')
-
-    user = User.where(name: 'a').first
-    Merit::RankRules.new.check_rank_rules
-    user.reload
-    assert_equal 2, user.level, "User level should be 2."
-
-    # Edit user's name by 5 chars name
-    visit "/users/#{user.id}/edit"
-    fill_in 'Name', with: 'abcde'
-    click_button('Update User')
-
-    user = User.where(name: 'abcde').first
-    Merit::RankRules.new.check_rank_rules
-    user.reload
-    assert_equal 5, user.level, "User level should be 5."
-  end
-
   test 'assigning points to a group of records' do
     DummyObserver.any_instance.expects(:update).times 4
     commenter = User.create(name: 'commenter')

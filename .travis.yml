@@ -9,7 +9,6 @@ env:
   - RAILS_VERSION=3.2
   - RAILS_VERSION=4.0
   - RAILS_VERSION=4.0-protected-attributes
-  - ORM=active_record
   - ORM=mongoid
 services:
   - mongodb

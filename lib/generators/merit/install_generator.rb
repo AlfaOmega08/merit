@@ -9,7 +9,6 @@ module Merit
         template 'merit.rb', 'config/initializers/merit.rb'
         template 'merit_badge_rules.rb', 'app/models/merit/badge_rules.rb'
         template 'merit_point_rules.rb', 'app/models/merit/point_rules.rb'
-        template 'merit_rank_rules.rb', 'app/models/merit/rank_rules.rb'
       end
     end
   end

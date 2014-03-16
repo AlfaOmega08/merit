@@ -27,6 +27,8 @@ module Merit
       score_points.sum(:num_points) || 0
     end
 
+    counter
+
     class Point
       include Mongoid::Document
       include Mongoid::Timestamps

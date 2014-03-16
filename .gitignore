@@ -9,3 +9,4 @@ test/dummy/log/*.log
 test/dummy/tmp/
 .ruby-version
 .ruby-gemset
+.idea/

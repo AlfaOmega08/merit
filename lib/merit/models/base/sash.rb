@@ -32,7 +32,7 @@ module Merit
       end
 
       def add_points(num_points, options = {})
-        point = Merit::Score::Point.new
+        point = Merit::Score::Point.new(log: options[:message] || '')
         point.num_points = num_points
         scores
           .where(category: options[:category] || 'default')
