@@ -18,11 +18,6 @@ module Merit
     yield @config if block_given?
   end
 
-  # Check rules on each request
-  def self.checks_on_each_request
-    @config.checks_on_each_request
-  end
-
   # # Define ORM
   def self.orm
     @config.orm || :mongoid
@@ -48,11 +43,10 @@ module Merit
   end
 
   class Configuration
-    attr_accessor :checks_on_each_request, :orm, :user_model_name, :observers,
+    attr_accessor :orm, :user_model_name, :observers,
                   :current_user_method
 
     def initialize
-      @checks_on_each_request = true
       @orm = :mongoid
       @user_model_name = 'User'
       @observers = []
@@ -74,23 +68,11 @@ module Merit
     initializer 'merit.controller' do |app|
       extend_orm_with_has_merit
       require_models
-      ActiveSupport.on_load(:action_controller) do
-        begin
-          # Load app rules on boot up
-          Merit::AppBadgeRules = Merit::BadgeRules.new.defined_rules
-          Merit::AppPointRules = Merit::PointRules.new.defined_rules
-          include Merit::ControllerExtensions
-        rescue NameError => e
-          # Trap NameError if installing/generating files
-          raise e unless e.to_s =~ /uninitialized constant Merit::BadgeRules/
-        end
-      end
     end
 
     def require_models
       require 'merit/models/base/sash'
       require 'merit/models/base/badges_sash'
-      require "merit/models/#{Merit.orm}/merit/activity_log"
       require "merit/models/#{Merit.orm}/merit/badges_sash"
       require "merit/models/#{Merit.orm}/merit/sash"
       require "merit/models/#{Merit.orm}/merit/score"

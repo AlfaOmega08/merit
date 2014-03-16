@@ -136,11 +136,6 @@ class NavigationTest < ActiveSupport::IntegrationCase
       click_button('Update User')
     end
 
-    # Check created Merit::ActivityLogs
-    assert_equal 'granted commenter badge', Merit::ActivityLog.all[0].description
-    assert_equal 'granted 20 points', Merit::ActivityLog.all[-1].description
-    assert_equal 'removed autobiographer badge', Merit::ActivityLog.all[-2].description
-
     user = User.where(name: 'abc').first
     assert !user.badges.include?(autobiographer_badge), "User badges: #{user.badges.collect(&:name).inspect} should remove autobiographer badge."
   end
